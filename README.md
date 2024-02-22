@@ -8,5 +8,7 @@ These will always be backwards compatible changes that can be safely ignored by
 other clients (optimizations, etc)
 
 [DIP-01: Image Metadata][dip1]
+[DIP-02: Quote Reposts][dip2]
 
 [dip1]: 01.md
+[dip2]: 02.md
