@@ -9,6 +9,8 @@ other clients (optimizations, etc)
 
 - [DIP-01: Image Metadata][dip1]
 - [DIP-02: Quote Reposts][dip2]
+- [DIP-03: Private and Anonymous Zaps][dip3]
 
 [dip1]: 01.md
 [dip2]: 02.md
+[dip3]: 03.md
