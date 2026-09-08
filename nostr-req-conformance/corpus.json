@@ -1,0 +1,133 @@
+[
+  {
+    "kind": 3063,
+    "id": "0a814c4d4d36b5b39422d74df8e5d205b453140aece003607b143b188e3c11ec",
+    "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+    "created_at": 1755000000,
+    "tags": [
+      [
+        "d",
+        "com.damus.notedeck@0.7.0"
+      ],
+      [
+        "c",
+        "main"
+      ],
+      [
+        "version",
+        "0.7.0"
+      ]
+    ],
+    "content": "notedeck 0.7.0",
+    "sig": "7b7def9dfaa74f992856dd69dcb4a1ca31b7b0fe69ebf5e4959cc8dcabbe4f9e7ba2b4cff7addb9ccfcafe91d19b9ecc1958397f2d5233e04b09055631b85381"
+  },
+  {
+    "kind": 3063,
+    "id": "5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad",
+    "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+    "created_at": 1756000000,
+    "tags": [
+      [
+        "d",
+        "com.damus.notedeck@0.8.0"
+      ],
+      [
+        "c",
+        "main"
+      ],
+      [
+        "version",
+        "0.8.0"
+      ]
+    ],
+    "content": "notedeck 0.8.0",
+    "sig": "8da8d97322b3658bb6d9235148cee3db3721fc54a35e75181282eb2b33c685bbdffd9e92346eddceba27af9d43da9270dbc9912223635c54dad7239dbaa8c0b3"
+  },
+  {
+    "kind": 30063,
+    "id": "1be51e8925221919023dccc559d0e593b75496ce1bfc4fd8d9c7dd3a9d38bc54",
+    "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+    "created_at": 1756000100,
+    "tags": [
+      [
+        "d",
+        "com.damus.notedeck@0.8.0"
+      ],
+      [
+        "f",
+        "x86_64-windows"
+      ],
+      [
+        "url",
+        "https://github.com/damus-io/notedeck/releases/download/v0.8.0/notedeck-x86_64-windows.exe"
+      ],
+      [
+        "x",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    ],
+    "content": "",
+    "sig": "da6b70d9eec0539f7cc2eae77bce960c542cb4037ffdc55f21227183b6bf60568ccbb31bfe3b8326ab3e233055381445e7e4220981aed159587e01c8c72e3cd2"
+  },
+  {
+    "kind": 30063,
+    "id": "0e3690becd61d5362fa5b759c24738d6a54d0834000a18d9f2a90a83eaa76d2a",
+    "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+    "created_at": 1756000100,
+    "tags": [
+      [
+        "d",
+        "com.damus.notedeck@0.8.0"
+      ],
+      [
+        "f",
+        "aarch64-linux"
+      ],
+      [
+        "url",
+        "https://github.com/damus-io/notedeck/releases/download/v0.8.0/notedeck-aarch64-linux"
+      ],
+      [
+        "x",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    ],
+    "content": "",
+    "sig": "c90cf84c8881620d2d5c0091c799dfdc8bcced49deebc715552eac7a9d57438e8dfdd8fb9fe1e466223974828c84df77696e1826bbd25d33e9c165328096aa44"
+  },
+  {
+    "kind": 30063,
+    "id": "fa6d38c37b329773615100140d222a4060bfdc990c2fa242dafd0e2f97bdd3bd",
+    "pubkey": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+    "created_at": 1756000200,
+    "tags": [
+      [
+        "d",
+        "com.damus.notedeck@0.8.0"
+      ],
+      [
+        "f",
+        "aarch64-linux"
+      ],
+      [
+        "url",
+        "https://evil.example/notedeck"
+      ],
+      [
+        "x",
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ]
+    ],
+    "content": "",
+    "sig": "79c288ad3bbd85b17dabf4abc459f22fcd863d6239a0582c6794ac205a94216ac69af9e50bd4e25dba1c248c01d6797fa4630e42c82a66a977967c0e9207c583"
+  },
+  {
+    "kind": 1,
+    "id": "ea80e4409703304bfa594bc85f69f5c0efd992fb6af04dc3b22e581e0e3378bf",
+    "pubkey": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+    "created_at": 1756000300,
+    "tags": [],
+    "content": "a plain note",
+    "sig": "338d5edd1a30b3bd8bdcbc37e4f0be4913d86603ef759a7e6919209d188958bb76698a7e5c68f94eb45a31fc6fe32430d3859752c2680f2aded1c28770f153c8"
+  }
+]

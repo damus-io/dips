@@ -11,8 +11,12 @@ other clients (optimizations, etc)
 - [DIP-02: Quote Reposts][dip2]
 - [DIP-03: Private Zaps][dip3]
 - [DIP-04: Quote Highlights][dip4]
+- [DIP-05: A NIP-01 filter as a query string][dip5]
+- [DIP-06: One-shot nostr queries over HTTP][dip6]
 
 [dip1]: 01.md
 [dip2]: 02.md
 [dip3]: 03.md
 [dip4]: 04.md
+[dip5]: 05.md
+[dip6]: 06.md

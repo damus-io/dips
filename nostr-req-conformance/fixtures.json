@@ -1,0 +1,1057 @@
+{
+  "spec": "../06.md",
+  "encoding": "../05.md",
+  "description": "Conformance fixtures for one-shot nostr queries over HTTP, and for the nfilter query-string encoding they are written in. See README.md.",
+  "profile": {
+    "max_events": 500,
+    "max_field_elements": 1024,
+    "max_tag_value_bytes": 1024,
+    "max_url_query_bytes": 2000,
+    "addressable_cache_control": "public, max-age=60",
+    "anchored_cache_control": "public, max-age=3600",
+    "open_ended_cache_control": "no-cache"
+  },
+  "profile_note": "The three *_cache_control values are what THIS deployment claims to send, not what the spec requires: classification is a SHOULD. A server that classifies nothing sets all three to no-cache and the caching group still passes. The `no_freshness` expectation is the profile-independent half -- it holds whatever the profile says.",
+  "keys": {
+    "publisher": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+    "impostor": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5"
+  },
+  "cases": [
+    {
+      "name": "get-requires-a-query-string",
+      "section": "Transports / GET",
+      "group": "core",
+      "transport": "get",
+      "omit_query": true,
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-pair-with-no-equals-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-empty-value-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=",
+      "note": "Ambiguous between 'matches nothing' and 'no constraint', which differ by the whole store.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-empty-tag-filter-value-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "%23d=",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-empty-element-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1,,2",
+      "note": "The same ambiguity as an empty value, one level down.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-unknown-field-is-refused-not-ignored",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=30063&nonsense=1",
+      "note": "Ignoring it would widen the query to every kind 30063 in the store.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "search-is-refused-rather-than-ignored",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1&search=hello",
+      "note": "nfilter defines the key; a decoder that does not implement it must refuse rather than ignore it, since answering without the constraint answers a different question.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "relays-is-refused-rather-than-ignored",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1&relays=wss%3A%2F%2Frelay.example",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-repeated-key-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1&kinds=2",
+      "note": "A repeated key is the ordinary query-string idiom for a list; this encoding spells a list with commas, so a repeat is a client that got the format wrong.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "kinds-must-be-integers",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=one",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "since-must-be-an-integer",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "since=yesterday",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "limit-must-not-be-negative",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1&limit=-1",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "until-must-not-be-a-float",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1&until=1756000000.5",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "authors-must-be-64-hex",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "authors=deadbeef",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "authors-must-be-hex-not-just-64-characters",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "authors=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-tag-filter-name-must-be-a-single-letter",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "%231=x",
+      "note": "NIP-01 defines tag filters as #<single-letter (a-zA-Z)>. Digits are not letters and are not indexed.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-multi-character-tag-filter-name-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "%23dd=x",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-malformed-percent-escape-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "%23d=a%ZZb",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-percent-escape-that-is-not-utf8-is-refused",
+      "section": "The query value",
+      "group": "core",
+      "transport": "both",
+      "query": "%23d=%FF",
+      "note": "Decoded lossily it becomes U+FFFD, which is a second spelling of the element and so a second cache key.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-oversized-field-is-refused-not-truncated",
+      "section": "The query value / Caps",
+      "group": "core",
+      "transport": "post",
+      "generate": "field_over_limit",
+      "note": "POST only: over max_field_elements is necessarily over max_url_query_bytes too, and a GET would be a 414 for the other reason.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-oversized-tag-value-is-refused",
+      "section": "The query value / Caps",
+      "group": "core",
+      "transport": "post",
+      "generate": "tag_value_over_limit",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-oversized-get-is-414-not-400",
+      "section": "Transports / GET",
+      "group": "core",
+      "transport": "get",
+      "generate": "url_over_limit",
+      "note": "Every part of this query is individually legal; only the URL budget is exceeded. 414 tells the client a shorter query would have worked.",
+      "expect": {
+        "status": 414,
+        "body": "error"
+      }
+    },
+    {
+      "name": "the-same-query-under-the-limit-is-accepted-on-post",
+      "section": "Transports",
+      "group": "core",
+      "transport": "post",
+      "generate": "url_over_limit",
+      "note": "The pair to the case above: the URL budget belongs to the GET transport alone.",
+      "expect": {
+        "status": 200,
+        "body": "events",
+        "checks": [
+          "ordered",
+          "unique_ids",
+          "within_cap"
+        ]
+      }
+    },
+    {
+      "name": "a-body-under-the-wrong-content-type-is-refused",
+      "section": "Transports / POST",
+      "group": "core",
+      "transport": "post",
+      "query": "kinds=1",
+      "content_type": "text/plain",
+      "note": "Guessing would also make the request a simple CORS request under a type that is not safelisted.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-json-body-is-refused-because-there-is-one-encoding",
+      "section": "Transports / POST",
+      "group": "core",
+      "transport": "post",
+      "query": "[{\"kinds\":[1]}]",
+      "content_type": "application/json",
+      "note": "The body is the query string, not JSON. Accepting both would put the canonical-form rules the caching rests on in two places at once.",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-post-with-no-body-is-refused",
+      "section": "Transports / POST",
+      "group": "core",
+      "transport": "post",
+      "omit_body": true,
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "an-error-body-is-a-json-object-with-a-string-error",
+      "section": "The response / Errors",
+      "group": "core",
+      "transport": "get",
+      "query": "kinds=1&nonsense=1",
+      "expect": {
+        "status": 400,
+        "body": "error"
+      }
+    },
+    {
+      "name": "a-query-matching-nothing-is-an-empty-array",
+      "section": "The response",
+      "group": "core",
+      "transport": "both",
+      "query": "ids=0000000000000000000000000000000000000000000000000000000000000000",
+      "note": "200 and [], never 404: the resource exists and the answer is 'nothing'.",
+      "expect": {
+        "status": 200,
+        "body": "events",
+        "headers": {
+          "content-type": "~application/json",
+          "etag": "*"
+        },
+        "checks": [
+          "empty"
+        ]
+      }
+    },
+    {
+      "name": "limit-zero-returns-nothing",
+      "section": "The response / limit",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1&limit=0",
+      "note": "NIP-01: 'When limit is zero, the relay MUST NOT return stored events for that filter.'",
+      "expect": {
+        "status": 200,
+        "body": "events",
+        "checks": [
+          "empty"
+        ]
+      }
+    },
+    {
+      "name": "a-limit-above-the-cap-cannot-raise-it",
+      "section": "The response / limit",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=1&limit=100000",
+      "expect": {
+        "status": 200,
+        "body": "events",
+        "checks": [
+          "ordered",
+          "unique_ids",
+          "within_cap",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "canonical-baseline",
+      "section": "The query value / Canonical form",
+      "group": "core",
+      "transport": "both",
+      "query": "%23d=com.damus.notedeck%400.8.0&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063",
+      "expect": {
+        "status": 200,
+        "body": "events",
+        "headers": {
+          "etag": "*",
+          "cache-control": "@addressable_cache_control"
+        },
+        "checks": [
+          "ordered",
+          "unique_ids",
+          "within_cap",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "pair-order-does-not-change-the-answer",
+      "section": "The query value / Canonical form",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=30063&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&%23d=com.damus.notedeck%400.8.0",
+      "same_as": "canonical-baseline",
+      "expect": {
+        "status": 200,
+        "body": "events"
+      }
+    },
+    {
+      "name": "hex-case-does-not-change-the-answer",
+      "section": "The query value / Canonical form",
+      "group": "core",
+      "transport": "both",
+      "query": "%23d=com.damus.notedeck%400.8.0&authors=79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798&kinds=30063",
+      "same_as": "canonical-baseline",
+      "expect": {
+        "status": 200,
+        "body": "events"
+      }
+    },
+    {
+      "name": "a-redundant-escape-does-not-change-the-answer",
+      "section": "The query value / Canonical form",
+      "group": "core",
+      "transport": "both",
+      "query": "%23d=c%6Fm.damus.notedeck%400.8.0&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063",
+      "same_as": "canonical-baseline",
+      "note": "`%6F` is `o`, which never needed escaping. One element, so one cache key.",
+      "expect": {
+        "status": 200,
+        "body": "events"
+      }
+    },
+    {
+      "name": "a-limit-above-the-cap-is-the-same-query-as-the-cap",
+      "section": "The response / limit",
+      "group": "core",
+      "transport": "get",
+      "query": "kinds=1&limit=999999",
+      "same_as": "a-limit-above-the-cap-cannot-raise-it",
+      "note": "Clamping during canonicalisation is what collapses every over-cap limit onto one cache key.",
+      "expect": {
+        "status": 200,
+        "body": "events"
+      }
+    },
+    {
+      "name": "element-order-and-repeats-do-not-change-the-answer",
+      "section": "The query value / Canonical form",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=30063,3063,30063",
+      "expect": {
+        "status": 200,
+        "body": "events",
+        "checks": [
+          "ordered",
+          "unique_ids",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "elements-sorted",
+      "section": "The query value / Canonical form",
+      "group": "core",
+      "transport": "both",
+      "query": "kinds=3063,30063",
+      "same_as": "element-order-and-repeats-do-not-change-the-answer",
+      "expect": {
+        "status": 200,
+        "body": "events"
+      }
+    },
+    {
+      "name": "an-addressable-query-is-cacheable-for-minutes",
+      "section": "Caching",
+      "group": "caching",
+      "transport": "get",
+      "query": "%23d=com.damus.notedeck%400.8.0&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063",
+      "note": "The install page's query. Addressable identity is (kind, author, d) and all three are pinned.",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "cache-control": "@addressable_cache_control",
+          "etag": "*",
+          "vary": "~Origin"
+        }
+      }
+    },
+    {
+      "name": "an-addressable-query-missing-its-author-is-not-addressable",
+      "section": "Caching",
+      "group": "caching",
+      "transport": "get",
+      "query": "%23d=com.damus.notedeck%400.8.0&kinds=30063",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "cache-control": "@open_ended_cache_control"
+        },
+        "no_freshness": true
+      }
+    },
+    {
+      "name": "an-until-in-the-past-anchors-the-answer",
+      "section": "Caching",
+      "group": "caching",
+      "transport": "get",
+      "query": "kinds=1&until=1000000000",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "cache-control": "@anchored_cache_control"
+        }
+      }
+    },
+    {
+      "name": "an-until-in-the-future-anchors-nothing",
+      "section": "Caching",
+      "group": "caching",
+      "transport": "get",
+      "query": "kinds=1&until=4102444800",
+      "note": "Events published between now and then still enter the answer.",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "cache-control": "@open_ended_cache_control"
+        },
+        "no_freshness": true
+      }
+    },
+    {
+      "name": "an-open-ended-query-is-not-cacheable",
+      "section": "Caching",
+      "group": "caching",
+      "transport": "get",
+      "query": "kinds=1",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "cache-control": "@open_ended_cache_control"
+        },
+        "no_freshness": true
+      }
+    },
+    {
+      "name": "the-post-path-carries-the-same-cache-control",
+      "section": "Transports / POST",
+      "group": "caching",
+      "transport": "post",
+      "query": "%23d=com.damus.notedeck%400.8.0&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063",
+      "note": "Nothing caches a POST, but computing it identically is what makes the flip to QUERY a routing change.",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "cache-control": "@addressable_cache_control",
+          "etag": "*"
+        }
+      }
+    },
+    {
+      "name": "if-none-match-with-the-current-etag-revalidates",
+      "section": "Caching / ETag",
+      "group": "conditional",
+      "transport": "get",
+      "query": "%23d=com.damus.notedeck%400.8.0&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063",
+      "if_none_match": "@etag",
+      "expect": {
+        "status": 304,
+        "body": "empty",
+        "headers": {
+          "etag": "*",
+          "cache-control": "@addressable_cache_control",
+          "content-type": "~application/json"
+        }
+      }
+    },
+    {
+      "name": "if-none-match-star-revalidates",
+      "section": "Caching / ETag",
+      "group": "conditional",
+      "transport": "get",
+      "query": "kinds=1",
+      "if_none_match": "*",
+      "expect": {
+        "status": 304,
+        "body": "empty"
+      }
+    },
+    {
+      "name": "if-none-match-accepts-a-list",
+      "section": "Caching / ETag",
+      "group": "conditional",
+      "transport": "get",
+      "query": "kinds=1",
+      "if_none_match": "\"0000000000000000000000000000000000000000000000000000000000000000\", @etag",
+      "expect": {
+        "status": 304,
+        "body": "empty"
+      }
+    },
+    {
+      "name": "if-none-match-compares-weakly",
+      "section": "Caching / ETag",
+      "group": "conditional",
+      "transport": "get",
+      "query": "kinds=1",
+      "if_none_match": "W/@etag",
+      "note": "RFC 9110 requires weak comparison for If-None-Match.",
+      "expect": {
+        "status": 304,
+        "body": "empty"
+      }
+    },
+    {
+      "name": "a-stale-if-none-match-gets-the-body",
+      "section": "Caching / ETag",
+      "group": "conditional",
+      "transport": "get",
+      "query": "kinds=1",
+      "if_none_match": "\"0000000000000000000000000000000000000000000000000000000000000000\"",
+      "expect": {
+        "status": 200,
+        "body": "events",
+        "headers": {
+          "etag": "*"
+        }
+      }
+    },
+    {
+      "name": "a-preflight-is-answered-and-lists-the-transports",
+      "section": "CORS",
+      "group": "cors",
+      "transport": "options",
+      "request_headers": {
+        "Origin": "https://damus.io",
+        "Access-Control-Request-Method": "QUERY",
+        "Access-Control-Request-Headers": "content-type"
+      },
+      "note": "A form-encoded POST is a simple request and is not preflighted. QUERY is not a safelisted method and will be, so an absent method here is how QUERY support ships broken.",
+      "expect": {
+        "status": [
+          200,
+          204
+        ],
+        "headers": {
+          "access-control-allow-methods": "~POST",
+          "access-control-allow-origin": "*",
+          "vary": "~Origin"
+        }
+      }
+    },
+    {
+      "name": "a-cross-origin-get-says-so-and-varies-on-it",
+      "section": "CORS",
+      "group": "cors",
+      "transport": "get",
+      "query": "kinds=1",
+      "request_headers": {
+        "Origin": "https://damus.io"
+      },
+      "note": "Vary: Origin or a shared cache serves one origin's Allow-Origin to another.",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "access-control-allow-origin": "*",
+          "vary": "~Origin"
+        }
+      }
+    },
+    {
+      "name": "corpus-the-install-pages-query",
+      "section": "The response",
+      "group": "corpus",
+      "transport": "both",
+      "query": "%23d=com.damus.notedeck%400.8.0&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063",
+      "note": "Both artifacts share a created_at, so this is also the ordering tiebreak: 0e36.. before 1be5..",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "0e3690becd61d5362fa5b759c24738d6a54d0834000a18d9f2a90a83eaa76d2a",
+          "1be51e8925221919023dccc559d0e593b75496ce1bfc4fd8d9c7dd3a9d38bc54"
+        ],
+        "checks": [
+          "ordered",
+          "unique_ids",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "corpus-forgetting-the-author-lets-the-impostor-in",
+      "section": "The response",
+      "group": "corpus",
+      "transport": "both",
+      "query": "%23d=com.damus.notedeck%400.8.0&kinds=30063",
+      "note": "The same query without the pinned author returns a newer artifact from a different key first. Not a server bug -- the point of pinning.",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "fa6d38c37b329773615100140d222a4060bfdc990c2fa242dafd0e2f97bdd3bd",
+          "0e3690becd61d5362fa5b759c24738d6a54d0834000a18d9f2a90a83eaa76d2a",
+          "1be51e8925221919023dccc559d0e593b75496ce1bfc4fd8d9c7dd3a9d38bc54"
+        ],
+        "checks": [
+          "ordered",
+          "unique_ids",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "corpus-one-filter-over-two-kinds-is-flat-and-ordered",
+      "section": "The response / Ordering",
+      "group": "corpus",
+      "transport": "both",
+      "query": "authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=3063,30063",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "0e3690becd61d5362fa5b759c24738d6a54d0834000a18d9f2a90a83eaa76d2a",
+          "1be51e8925221919023dccc559d0e593b75496ce1bfc4fd8d9c7dd3a9d38bc54",
+          "5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad",
+          "0a814c4d4d36b5b39422d74df8e5d205b453140aece003607b143b188e3c11ec"
+        ],
+        "checks": [
+          "ordered",
+          "unique_ids",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "corpus-limit-takes-the-newest",
+      "section": "The response / limit",
+      "group": "corpus",
+      "transport": "both",
+      "query": "authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=3063&limit=1",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad"
+        ]
+      }
+    },
+    {
+      "name": "corpus-limit-zero-returns-nothing",
+      "section": "The response / limit",
+      "group": "corpus",
+      "transport": "both",
+      "query": "authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=3063&limit=0",
+      "note": "This one has data behind it, unlike the core-group version, so a server that treats 0 as 'unset' fails here rather than passing vacuously.",
+      "expect": {
+        "status": 200,
+        "ids": []
+      }
+    },
+    {
+      "name": "corpus-until-is-inclusive",
+      "section": "The query value",
+      "group": "corpus",
+      "transport": "both",
+      "query": "authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&until=1756000000",
+      "note": "NIP-01: since <= created_at <= until. 5e961a.. is exactly at the boundary and must be included.",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad",
+          "0a814c4d4d36b5b39422d74df8e5d205b453140aece003607b143b188e3c11ec"
+        ],
+        "headers": {
+          "cache-control": "@anchored_cache_control"
+        },
+        "checks": [
+          "ordered",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "corpus-since-is-inclusive",
+      "section": "The query value",
+      "group": "corpus",
+      "transport": "both",
+      "query": "authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&since=1756000100",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "0e3690becd61d5362fa5b759c24738d6a54d0834000a18d9f2a90a83eaa76d2a",
+          "1be51e8925221919023dccc559d0e593b75496ce1bfc4fd8d9c7dd3a9d38bc54"
+        ],
+        "checks": [
+          "ordered",
+          "matches_filter"
+        ]
+      }
+    },
+    {
+      "name": "corpus-an-escaped-tag-value-decodes-before-matching",
+      "section": "The query value",
+      "group": "corpus",
+      "transport": "both",
+      "query": "%23d=com.damus.notedeck%400.7.0",
+      "note": "`@` is not unreserved, so this element is percent-encoded on the wire. A server that matched the encoded text would return nothing.",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "0a814c4d4d36b5b39422d74df8e5d205b453140aece003607b143b188e3c11ec"
+        ]
+      }
+    },
+    {
+      "name": "corpus-an-ids-filter-selects-one-event",
+      "section": "The query value",
+      "group": "corpus",
+      "transport": "both",
+      "query": "ids=5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad"
+        ]
+      }
+    },
+    {
+      "name": "corpus-events-are-returned-verbatim",
+      "section": "The response",
+      "group": "corpus",
+      "transport": "get",
+      "query": "ids=5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad",
+      "note": "Re-encoding an event is how a signature stops verifying at the client, so the returned object must equal the corpus object member for member.",
+      "expect": {
+        "status": 200,
+        "ids": [
+          "5e961a7da7404a32cc597b20cc8b19e99963eeb77e79ff2644be811d3c9f1fad"
+        ],
+        "checks": [
+          "events_match_corpus"
+        ]
+      }
+    },
+    {
+      "name": "corpus-two-different-queries-have-different-etags",
+      "section": "Caching / ETag",
+      "group": "corpus",
+      "transport": "get",
+      "query": "%23d=com.damus.notedeck%400.7.0",
+      "differs_from": "corpus-an-ids-filter-selects-one-event",
+      "note": "Against an empty store every response has the same ETag and every same_as case passes vacuously. This is the case that needs data.",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "etag": "*"
+        }
+      }
+    }
+  ],
+  "canonical_cases": [
+    {
+      "name": "pairs-sort-by-their-encoded-key",
+      "note": "'%' is U+0025, below every letter, so a tag filter leads.",
+      "input": "until=9&limit=3&since=1&kinds=1&%23d=x&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+      "canonical": "%23d=x&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=1&limit=3&since=1&until=9"
+    },
+    {
+      "name": "hex-is-lowercased",
+      "note": "An uppercase author matches the same events and hashes to a different cache key.",
+      "input": "authors=79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798&kinds=30063",
+      "canonical": "authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063"
+    },
+    {
+      "name": "elements-are-sorted-and-deduplicated",
+      "input": "kinds=30063,1,30063,0&%23d=b,a,b",
+      "canonical": "%23d=a,b&kinds=0,1,30063"
+    },
+    {
+      "name": "kinds-sort-numerically-and-everything-else-as-text",
+      "note": "Sorted as text, kinds would be 1,30063,7 -- a different string for the same set.",
+      "input": "kinds=7,1,30063&%23t=7,1,30063",
+      "canonical": "%23t=1,30063,7&kinds=1,7,30063"
+    },
+    {
+      "name": "escapes-are-uppercased",
+      "note": "RFC 3986 6.2.2.1. Two spellings of one escape are two cache keys.",
+      "input": "%23d=a%2cb",
+      "canonical": "%23d=a%2Cb"
+    },
+    {
+      "name": "a-redundant-escape-is-removed",
+      "note": "%6F is `o`, which is unreserved and never needed escaping.",
+      "input": "%23d=c%6Fm",
+      "canonical": "%23d=com"
+    },
+    {
+      "name": "everything-outside-unreserved-is-escaped",
+      "note": "Stricter than a URL requires -- `@` would survive unescaped -- which is what gives an element exactly one encoding.",
+      "input": "%23d=com.damus.notedeck@0.8.0",
+      "canonical": "%23d=com.damus.notedeck%400.8.0"
+    },
+    {
+      "name": "plus-is-a-space-and-a-literal-plus-is-escaped",
+      "note": "application/x-www-form-urlencoded defines + as a space. Canonical form never emits a bare +, so the two readings never disagree on a canonical query.",
+      "input": "%23d=a+b,c%2Bd",
+      "canonical": "%23d=a%20b,c%2Bd"
+    },
+    {
+      "name": "elements-sort-by-encoded-text-which-is-ascii",
+      "note": "U+FF21 is below U+1F600 by code point and above it by UTF-16 code unit -- the trap a decoded-order rule sets for JavaScript. Encoded, both are ASCII and neither reading is reachable.",
+      "input": "%23t=%F0%9F%98%80,%EF%BC%A1",
+      "canonical": "%23t=%EF%BC%A1,%F0%9F%98%80"
+    },
+    {
+      "name": "a-limit-above-the-cap-is-clamped-during-canonicalisation",
+      "note": "Otherwise every over-cap limit is its own cache key over one answer.",
+      "input": "kinds=1&limit=100000",
+      "canonical": "kinds=1&limit=500"
+    }
+  ],
+  "encode_cases": [
+    {
+      "name": "pairs-sort-by-their-encoded-key",
+      "note": "'%' is U+0025, below every letter, so a tag filter leads.",
+      "filter": {
+        "until": 9,
+        "limit": 3,
+        "since": 1,
+        "kinds": [
+          1
+        ],
+        "#d": [
+          "x"
+        ],
+        "authors": [
+          "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"
+        ]
+      },
+      "canonical": "%23d=x&authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=1&limit=3&since=1&until=9"
+    },
+    {
+      "name": "hex-is-lowercased",
+      "filter": {
+        "authors": [
+          "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        ],
+        "kinds": [
+          30063
+        ]
+      },
+      "canonical": "authors=79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798&kinds=30063"
+    },
+    {
+      "name": "elements-are-sorted-and-deduplicated",
+      "filter": {
+        "kinds": [
+          30063,
+          1,
+          30063,
+          0
+        ],
+        "#d": [
+          "b",
+          "a",
+          "b"
+        ]
+      },
+      "canonical": "%23d=a,b&kinds=0,1,30063"
+    },
+    {
+      "name": "kinds-sort-numerically-and-everything-else-as-text",
+      "note": "Sorted as text, kinds would be 1,30063,7 -- a different string for the same set.",
+      "filter": {
+        "kinds": [
+          7,
+          1,
+          30063
+        ],
+        "#t": [
+          "7",
+          "1",
+          "30063"
+        ]
+      },
+      "canonical": "%23t=1,30063,7&kinds=1,7,30063"
+    },
+    {
+      "name": "everything-outside-unreserved-is-escaped",
+      "note": "Stricter than a URL requires -- `@` would survive unescaped -- which is what gives an element exactly one encoding.",
+      "filter": {
+        "#d": [
+          "com.damus.notedeck@0.8.0"
+        ]
+      },
+      "canonical": "%23d=com.damus.notedeck%400.8.0"
+    },
+    {
+      "name": "the-unreserved-set-passes-through-whole",
+      "filter": {
+        "#d": [
+          "aZ0-._~"
+        ]
+      },
+      "canonical": "%23d=aZ0-._~"
+    },
+    {
+      "name": "a-literal-plus-and-a-space-are-different-elements",
+      "note": "application/x-www-form-urlencoded reads `+` as a space, so an encoder that emitted a bare `+` for a plus would encode a different query.",
+      "filter": {
+        "#d": [
+          "a b",
+          "c+d"
+        ]
+      },
+      "canonical": "%23d=a%20b,c%2Bd"
+    },
+    {
+      "name": "elements-sort-by-encoded-text-which-is-ascii",
+      "note": "U+FF21 is below U+1F600 by code point and above it by UTF-16 code unit. An encoder sorting the decoded values with Array.prototype.sort() gets this backwards and emits a second cache entry for one query.",
+      "filter": {
+        "#t": [
+          "😀",
+          "Ａ"
+        ]
+      },
+      "canonical": "%23t=%EF%BC%A1,%F0%9F%98%80"
+    },
+    {
+      "name": "the-install-pages-query",
+      "note": "The real one, from the notedeck install page.",
+      "filter": {
+        "authors": [
+          "32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245"
+        ],
+        "kinds": [
+          3063,
+          30063
+        ],
+        "#i": [
+          "com.damus.notedeck"
+        ],
+        "limit": 450
+      },
+      "canonical": "%23i=com.damus.notedeck&authors=32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245&kinds=3063,30063&limit=450"
+    }
+  ]
+}
